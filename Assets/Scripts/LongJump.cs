@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class LongJump : DefaultObject {
+public class LongJump : Interactable {
 
 	public string actor="player"; 
 	public float power=1.0f; // Jump power
