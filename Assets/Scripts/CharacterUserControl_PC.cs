@@ -10,6 +10,7 @@ public class CharacterUserControl_PC : MonoBehaviour
 
     private PlatformerCharacter2D _Character;
     private bool _Jump;
+    private bool _Crouch;
 
     private void Awake()
     {
@@ -20,18 +21,19 @@ public class CharacterUserControl_PC : MonoBehaviour
     {
         if (!_Jump)
         {
-            // Read the jump input in Update so button presses aren't missed
+            // Read the jump and crouch input in Update so button presses aren't missed
             _Jump = Input.GetKeyDown(_JumpKey);
+            _Crouch = Input.GetKey(_CrouchKey);
         }
     }
 
     private void FixedUpdate()
     {
         // Read the inputs.
-        bool crouch = Input.GetKey(_CrouchKey);
         float h = Input.GetAxis("Horizontal");
+        
         // Pass all parameters to the character control script.
-        _Character.Move(h, crouch, _Jump);
+        _Character.Move(h, _Crouch, _Jump);
         _Jump = false;
     }
 }

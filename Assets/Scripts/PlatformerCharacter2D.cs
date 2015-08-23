@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace UnityStandardAssets._2D
 {
@@ -11,19 +13,21 @@ namespace UnityStandardAssets._2D
         [SerializeField] private bool m_AirControl = false;                 // Whether or not a player can steer while jumping;
         [SerializeField] private LayerMask m_WhatIsGround;                  // A mask determining what is ground to the character
 
-        private Transform m_GroundCheck;    // A position marking where to check if the player is grounded.
-        const float k_GroundedRadius = .2f; // Radius of the overlap circle to determine if grounded
-        private bool m_Grounded;            // Whether or not the player is grounded.
-        private Transform m_CeilingCheck;   // A position marking where to check for ceilings
-        const float k_CeilingRadius = .01f; // Radius of the overlap circle to determine if the player can stand up
-        private Animator m_Anim;            // Reference to the player's animator component.
-        private Rigidbody2D m_Rigidbody2D;
-        private bool m_FacingRight = true;  // For determining which way the player is currently facing.
+        private Transform m_GroundCheck_f;      // A position marking where to check if the player is grounded (front).
+        private Transform m_GroundCheck_b;      // A position marking where to check if the player is grounded (back).
+        const float k_GroundedRadius = .2f;    // Radius of the overlap circle to determine if grounded
+        private bool m_Grounded;                // Whether or not the player is grounded.
+        private Transform m_CeilingCheck;       // A position marking where to check for ceilings
+        const float k_CeilingRadius = .01f;     // Radius of the overlap circle to determine if the player can stand up
+        private Animator m_Anim;                // Reference to the player's animator component.
+        private Rigidbody2D m_Rigidbody2D;      // Reference to the player's Rigidbody component.
+        private bool m_FacingRight = true;      // For determining which way the player is currently facing.
 
         private void Awake()
         {
             // Setting up references.
-            m_GroundCheck = transform.Find("GroundCheck");
+            m_GroundCheck_f = transform.Find("GroundCheck_f");
+            m_GroundCheck_b = transform.Find("GroundCheck_b");
             m_CeilingCheck = transform.Find("CeilingCheck");
             m_Anim = GetComponent<Animator>();
             m_Rigidbody2D = GetComponent<Rigidbody2D>();
@@ -36,10 +40,14 @@ namespace UnityStandardAssets._2D
 
             // The player is grounded if a circlecast to the groundcheck position hits anything designated as ground
             // This can be done using layers instead but Sample Assets will not overwrite your project settings.
-            Collider2D[] colliders = Physics2D.OverlapCircleAll(m_GroundCheck.position, k_GroundedRadius, m_WhatIsGround);
-            for (int i = 0; i < colliders.Length; i++)
+            Collider2D[] colliders_f = Physics2D.OverlapCircleAll(m_GroundCheck_f.position, k_GroundedRadius, m_WhatIsGround);
+            Collider2D[] colliders_b = Physics2D.OverlapCircleAll(m_GroundCheck_b.position, k_GroundedRadius, m_WhatIsGround);
+            IEnumerable<Collider2D> colliders = colliders_f.Intersect<Collider2D>(colliders_b);
+            
+            for (int i = 0; i < colliders.Count(); i++)
             {
-                if (colliders[i].gameObject != gameObject)
+
+                if (colliders.ElementAt(i).gameObject != gameObject)
                     m_Grounded = true;
             }
             m_Anim.SetBool("Ground", m_Grounded);
